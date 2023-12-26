@@ -1,0 +1,57 @@
+version: '3'
+services:
+
+  laravel:
+    build:
+      context: ./laravel
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./laravel:/var/www/html
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_DATABASE=testing"
+    volumes:
+      - ./data/mysql/:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 9090:80
+    # depends_on:
+    #   - mysql
+    environment:
+      - PMA_ARBITRARY=1
+      - "UPLOAD_LIMIT=8192M"
+      - "MEMORY_LIMIT=8192M"
+
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+  #   environment:
+  #     - discovery.type=single-node
+  #   ports:
+  #     - "9200:9200"
+  #   networks:
+  #     - laravel
+
+  meilisearch:
+    image: getmeili/meilisearch:v0.24.0  # Reemplaza v0.24.0 con la versión que deseas
+    ports:
+      - 7700:7700
+    deploy:
+          resources:
+            limits:
+              cpus: '2'
+              memory: 2G
+          restart_policy:
+            condition: on-failure
+
+networks:
+  laravel:
+    driver: bridge
